@@ -1,0 +1,30 @@
+﻿{
+  "bookId": "1",
+  "bookData": {
+    "title": "The Iron Dominion",
+    "fiction": false
+  },
+  "details": {
+    "pages": 420,
+    "format": "hardcover",
+    "illustrated": true,
+    "specialEdition": false
+  },
+  "features": [
+    {
+      "name": "Map Included",
+      "extended": false
+    },
+    {
+      "name": "Author Notes",
+      "extended": true
+    },
+    {
+      "name": "Bonus Chapter",
+      "extended": true
+    }
+  ],
+  "available": true,
+  "onSale": true
+}
+

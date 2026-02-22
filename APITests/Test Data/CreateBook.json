@@ -1,0 +1,21 @@
+﻿{
+  "bookId": "18",
+  "bookData": {
+    "title": "The Cucumber Chronicles",
+    "fiction": true
+  },
+  "details": {
+    "pages": 312,
+    "format": "paperback",
+    "illustrated": false,
+    "specialEdition": false
+  },
+  "features": [
+    {
+      "name": "Author Commentary",
+      "extended": false
+    }
+  ],
+  "available": true,
+  "onSale": false
+}
