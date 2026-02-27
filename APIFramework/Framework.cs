@@ -1,5 +1,7 @@
-﻿using System;
+﻿using RestSharp;
+using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 
 namespace APIFramework
@@ -8,107 +10,138 @@ namespace APIFramework
     {
         public void Sleep(int seconds) => Thread.Sleep(TimeSpan.FromSeconds(seconds));
 
-        public List<ListBooks> GetBooks(string endpoint)
+        public RestResponse GetBookResponseById(string bookId)
         {
-            APIBase<ListBooks> book = new APIBase<ListBooks>();
-            RestSharp.RestClient url = book.ChangeUrl(endpoint);
-            RestSharp.RestRequest request = book.GetRequest();
-            RestSharp.RestResponse response = book.ExecuteResponse(url, request);
-            List<ListBooks> content = book.GetAllContent<ListBooks>(response);
-            return content;
+            APIBase<Book> book = new APIBase<Book>();
+            RestClient url = book.ChangeUrl($"book/{bookId}");
+            RestRequest request = book.GetRequest();
+            RestResponse response = book.ExecuteResponse(url, request);
+            return response;
         }
 
-        public ListBooks GetBook(string endpoint)
+        public HttpStatusCode GetBookResponseCodeById(string bookId)
         {
-            APIBase<ListBooks> book = new APIBase<ListBooks>();
-            RestSharp.RestClient url = book.ChangeUrl(endpoint);
-            RestSharp.RestRequest request = book.GetRequest();
-            RestSharp.RestResponse response = book.ExecuteResponse(url, request);
-            ListBooks content = book.GetContent<ListBooks>(response);
-            return content;
-        }
-
-        public int GetBookResponseCode(string endpoint)
-        {
-            APIBase<ListBooks> book = new APIBase<ListBooks>();
-            RestSharp.RestClient url = book.ChangeUrl(endpoint);
-            RestSharp.RestRequest request = book.GetRequest();
-            RestSharp.RestResponse response = book.ExecuteResponse(url, request);
-            int statuscode = book.GetResponseCode(response);
+            APIBase<Book> book = new APIBase<Book>();
+            RestClient url = book.ChangeUrl($"book/{bookId}");
+            RestRequest request = book.GetRequest();
+            RestResponse response = book.ExecuteResponse(url, request);
+            HttpStatusCode statuscode = response.StatusCode;
             return statuscode;
         }
 
-        public CreateBooks CreateBooks(dynamic body)
+        public List<Book> GetBooks(string endpoint)
         {
-            APIBase<CreateBooks> book = new APIBase<CreateBooks>();
-            RestSharp.RestClient url = book.ChangeUrl("book");
-            dynamic jsonString = book.Serialize(body);
-            dynamic request = book.PostRequest(jsonString);
-            dynamic response = book.ExecuteResponse(url, request);
-            dynamic statuscode = book.GetResponseCode(response);
-
-            if (statuscode == 202)
-            {
-                Sleep(5);
-                RestSharp.RestClient newurl = book.ChangeUrl($"book/{body.BookId}");
-                RestSharp.RestRequest newRequest = book.GetRequest();
-                RestSharp.RestResponse newResponse = book.ExecuteResponse(newurl, newRequest);
-
-                CreateBooks content = book.GetContent<CreateBooks>(newResponse);
-                return content;
-            }
-            else
-            {
-                throw new Exception($"API request failed with status code: {statuscode}\n {response.Content}"); 
-            }
-        }
-        public UpdateBooks UpdateBooks(dynamic body)
-        {
-            APIBase<UpdateBooks> book = new APIBase<UpdateBooks>();
-            RestSharp.RestClient url = book.ChangeUrl("book");
-            dynamic jsonString = book.Serialize(body);
-            dynamic request = book.UpdateRequest(jsonString);
-            dynamic response = book.ExecuteResponse(url, request);
-            dynamic statuscode = book.GetResponseCode(response);
-
-            if (statuscode == 204)
-            {
-                Sleep(5);
-                RestSharp.RestClient newurl = book.ChangeUrl($"book/{body.BookId}");
-                RestSharp.RestRequest newRequest = book.GetRequest();
-                RestSharp.RestResponse newResponse = book.ExecuteResponse(newurl, newRequest);
-
-                UpdateBooks content = book.GetContent<UpdateBooks>(newResponse);
-                return content;
-            }
-            else
-            {
-                throw new Exception($"API request failed with status code: {statuscode}");
-            }
+            APIBase<Book> book = new APIBase<Book>();
+            RestClient url = book.ChangeUrl(endpoint);
+            RestRequest request = book.GetRequest();
+            RestResponse response = book.ExecuteResponse(url, request);
+            List<Book> content = book.GetAllContent<Book>(response);
+            return content;
         }
 
-        public List<DeleteBooks> DeleteBooks(int bookId)
+        public Book GetBookById(string bookId)
+        {     
+            int retries = 0;
+            int maxRetries = 3;
+            RestResponse response = null;
+
+            while (retries < maxRetries)
+            {
+                retries++;
+
+                APIBase<Book> book = new APIBase<Book>();
+                RestClient url = book.ChangeUrl($"book/{bookId}");
+                RestRequest request = book.GetRequest();
+                response = book.ExecuteResponse(url, request);
+                Book content = book.GetContent<Book>(response);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    return content;
+                }
+
+                Sleep(5); // Wait for 5 seconds before retrying
+            }
+
+            throw new Exception($"API request failed after {maxRetries} attempts with status code: {response.StatusCode}\n {response.Content}");
+        }
+
+        public string CreateBook(Book newBook)
         {
-            APIBase<DeleteBooks> book = new APIBase<DeleteBooks>();
-            RestSharp.RestClient url = book.ChangeUrl($"book/{bookId}");
-            RestSharp.RestRequest request = book.DeleteRequest();
-            RestSharp.RestResponse response = book.ExecuteResponse(url, request);
-            int statuscode = book.GetResponseCode(response);
+            int retries = 0;
+            int maxRetries = 3;
+            RestResponse response = null;
 
-            if (statuscode == 204)
+            while (retries < maxRetries)
             {
-                Sleep(5);
-                RestSharp.RestClient newurl = book.ChangeUrl("books");
-                RestSharp.RestRequest newRequest = book.GetRequest();
-                RestSharp.RestResponse newResponse = book.ExecuteResponse(newurl, newRequest);
+                retries++;
 
-                List<DeleteBooks> content = book.GetAllContent<DeleteBooks>(newResponse);
-                return content;
+                APIBase<Book> book = new APIBase<Book>();
+                RestClient url = book.ChangeUrl("book");
+                //string jsonString = book.Serialize(newBook);
+                RestRequest request = book.PostRequest(newBook);
+                response = book.ExecuteResponse(url, request);
+
+                if (response.StatusCode == HttpStatusCode.Accepted)
+                {
+                    return response.Content;
+                }
+
+                Sleep(5); // Wait for 5 seconds before retrying
             }
-            else
+
+            throw new Exception($"API request failed after {maxRetries} attempts with status code: {response.StatusCode}\n {response.Content}");
+
+        }
+
+        public string UpdateBook(Book updateBook)
+        {
+            int retries = 0;
+            int maxRetries = 3;
+            RestResponse response = null;
+
+            while (retries < maxRetries)
             {
-                throw new Exception($"API request failed with status code: {statuscode}");
+                retries++;
+                APIBase<Book> book = new APIBase<Book>();
+                RestClient url = book.ChangeUrl("book");
+                RestRequest request = book.UpdateRequest(updateBook);
+                response = book.ExecuteResponse(url, request);
+
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    return response.Content;
+                }
+
+                Sleep(5); // Wait for 5 seconds before retrying
             }
+
+            throw new Exception($"API request failed after {maxRetries} attempts with status code: {response.StatusCode}\n {response.Content}");
+        }
+
+        public string DeleteBook(string bookId)
+        {
+            int retries = 0;
+            int maxRetries = 3;
+            RestResponse response = null;
+
+            while (retries < maxRetries)
+            {
+                retries++;
+                APIBase<Book> book = new APIBase<Book>();
+                RestClient url = book.ChangeUrl($"book/{bookId}");
+                RestRequest request = book.DeleteRequest();
+                response = book.ExecuteResponse(url, request);
+
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    return response.Content;
+                }
+
+                Sleep(5); // Wait for 5 seconds before retrying
+            }
+
+            throw new Exception($"API request failed after {maxRetries} attempts with status code: {response.StatusCode}\n {response.Content}");
         }
     }
 }

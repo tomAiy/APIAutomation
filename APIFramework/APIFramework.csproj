@@ -104,12 +104,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="APIBase.cs" />
-    <Compile Include="Requests\CreateBooks.cs" />
     <Compile Include="Framework.cs" />
-    <Compile Include="Requests\DeleteBooks.cs" />
-    <Compile Include="Requests\ListBooks.cs" />
+    <Compile Include="Requests\Book.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Requests\UpdateBooks.cs" />
     <Compile Include="Utility\HandleContent.cs" />
   </ItemGroup>
   <ItemGroup>

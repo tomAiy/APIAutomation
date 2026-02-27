@@ -2,9 +2,9 @@
 
 namespace APIFramework
 {
-    public partial class ListBooks
+    public partial class Book
     {
-        public long BookId { get; set; }
+        public string BookId { get; set; }
         public BookData BookData { get; set; }
         public Details Details { get; set; }
         public List<Features> Features { get; set; }

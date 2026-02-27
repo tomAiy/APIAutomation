@@ -20,7 +20,7 @@ namespace APIFramework
             return restClient;
         }
 
-        public RestRequest PostRequest(string requestbody) 
+        public RestRequest PostRequest(object requestbody) 
         {
             RestRequest restRequest = new RestRequest("", Method.Post);
             restRequest.AddHeader("Accept", "application/json");
@@ -29,7 +29,7 @@ namespace APIFramework
             return restRequest;
         }
 
-        public RestRequest UpdateRequest(string requestbody) 
+        public RestRequest UpdateRequest(object requestbody) 
         {
             RestRequest restRequest = new RestRequest("", Method.Put);
             restRequest.AddHeader("Accept", "application/json");
@@ -59,7 +59,7 @@ namespace APIFramework
             return client.Execute(request);
         }
 
-        public int GetResponseCode(RestResponse response) 
+        public int GetResponseCode(RestResponse response)
         {
             HttpStatusCode statusCode = response.StatusCode;
             return (int)statusCode;
