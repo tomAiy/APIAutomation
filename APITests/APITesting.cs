@@ -1,6 +1,4 @@
 ﻿using APIFramework;
-using APIFramework.Utility;
-using APITests.Test_Data;
 using AutoFixture;
 using NUnit.Framework;
 using System.Collections.Generic;
